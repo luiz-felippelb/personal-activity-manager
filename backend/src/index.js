@@ -4,6 +4,9 @@ const port = 3000
 const swaggerUI = require('swagger-ui-express')
 const swaggerFile = require('./swagger.json')
 
+// Middleware para analisar o corpo da requisição como JSON
+app.use(express.json());
+
 const activity = require('./routes/activity')
 const category = require('./routes/category')
 const user = require('./routes/user')

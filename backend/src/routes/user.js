@@ -1,14 +1,17 @@
 const status = require("http-status");
 const { Router } = require("express");
 const router = Router();
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     // #swagger.tags = ['User']
     // #swagger.description = 'Endpoint that returns all users'
 
     try {
-        // CONSTRUIR LOGICA PARA OBTER OS USUÁRIOS DO BANCO DE DADOS
-        const users = [{ id: 1, name: "User 1" }, { id: 2, name: "User 2" }]; // Dados estáticos de exemplo
+        const users = await prisma.user_profile.findMany(); // Fetch all users from the database
+
+        await prisma.$disconnect();
 
         /* #swagger.responses[200] = {
             description: 'Users found',
@@ -16,12 +19,14 @@ router.get('/', (req, res) => {
         } */
         return res.status(status.OK).send(users);
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     // #swagger.tags = ['User']
     // #swagger.description = 'Endpoint that creates a new user'
 
@@ -31,12 +36,19 @@ router.post('/', (req, res) => {
        required: true,
        schema: { $ref: "#/definitions/AddUser" }
     } */
-    
+
     const user = req.body;
 
     try {
-        // CONSTRUIR A LOGICA PARA ADICIONAR O USUÁRIO NO BANCO DE DADOS
-        const newUser = { id: 1, ...user }; // Dados estáticos de exemplo
+        const newUser = await prisma.user_profile.create({
+            data: {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                password: user.password
+            }
+        });
+
+        await prisma.$disconnect();
 
         /* #swagger.responses[201] = {
             description: 'User created successfully',
@@ -44,12 +56,14 @@ router.post('/', (req, res) => {
         } */
         return res.status(status.CREATED).send(newUser);
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
     // #swagger.tags = ['User']
     // #swagger.description = 'Endpoint that updates a user by ID'
 
@@ -66,7 +80,7 @@ router.put('/:id', (req, res) => {
         required: true,
         schema: { $ref: "#/definitions/UpdateUser" }
     } */
-    
+
     const id = parseInt(req.params.id, 10);
     const updatedUser = req.body;
 
@@ -79,8 +93,16 @@ router.put('/:id', (req, res) => {
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA ATUALIZAR O USUÁRIO NO BANCO DE DADOS
-        const user = { id, ...updatedUser }; // Dados estáticos de exemplo
+        const user = await prisma.user_profile.update({
+            where: { id: id },
+            data: {
+                first_name: updatedUser.first_name,
+                last_name: updatedUser.last_name,
+                password: updatedUser.password
+            }
+        });
+
+        await prisma.$disconnect();
 
         if (user) {
             /* #swagger.responses[200] = {
@@ -96,12 +118,14 @@ router.put('/:id', (req, res) => {
             return res.status(status.NOT_FOUND).send({ message: "User not found" });
         }
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
     // #swagger.tags = ['User']
     // #swagger.description = 'Endpoint that deletes a user by ID'
 
@@ -111,7 +135,7 @@ router.delete('/:id', (req, res) => {
         required: true,
         type: 'integer'
     } */
-    
+
     const id = parseInt(req.params.id, 10);
 
     if (isNaN(id)) {
@@ -123,10 +147,13 @@ router.delete('/:id', (req, res) => {
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA DELETAR O USUÁRIO NO BANCO DE DADOS
-        const user = { id, name: "Sample User" }; // Dados estáticos de exemplo
+        const deletedUser = await prisma.user_profile.delete({
+            where: { id: id }
+        });
 
-        if (user) {
+        await prisma.$disconnect();
+
+        if (deletedUser) {
             /* #swagger.responses[200] = {
                 description: 'User deleted successfully',
                 schema: { $ref: "#/definitions/User" }
@@ -140,6 +167,8 @@ router.delete('/:id', (req, res) => {
             return res.status(status.NOT_FOUND).send({ message: "User not found" });
         }
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }

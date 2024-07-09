@@ -1,14 +1,17 @@
 const status = require("http-status");
 const { Router } = require("express");
 const router = Router();
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     // #swagger.tags = ['Category']
     // #swagger.description = 'Endpoint that returns all categories'
-    
+
     try {
-        // CONSTRUIR LOGICA PARA OBTER AS CATEGORIAS DO BANCO DE DADOS
-        const categories = [{ id: 1, name: "Category 1" }, { id: 2, name: "Category 2" }]; // Dados estáticos de exemplo
+        const categories = await prisma.category.findMany(); // Fetch all categories from the database
+
+        await prisma.$disconnect();
 
         /* #swagger.responses[200] = {
             description: 'Categories found',
@@ -16,12 +19,14 @@ router.get('/', (req, res) => {
         } */
         return res.status(status.OK).send(categories);
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     // #swagger.tags = ['Category']
     // #swagger.description = 'Endpoint that creates a new category'
 
@@ -35,8 +40,15 @@ router.post('/', (req, res) => {
     const category = req.body;
 
     try {
-        // CONSTRUIR A LOGICA PARA ADICIONAR A CATEGORIA NO BANCO DE DADOS
-        const newCategory = { id: 1, ...category }; // Dados estáticos de exemplo
+        const newCategory = await prisma.category.create({
+            data: {
+                description: category.description,
+                created_at: new Date(category.created_at),
+                updated_at: new Date(category.updated_at)
+            }
+        });
+
+        await prisma.$disconnect();
 
         /* #swagger.responses[201] = {
             description: 'Category created successfully',
@@ -44,12 +56,14 @@ router.post('/', (req, res) => {
         } */
         return res.status(status.CREATED).send(newCategory);
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
     // #swagger.tags = ['Category']
     // #swagger.description = 'Endpoint that updates a category by ID'
 
@@ -79,8 +93,18 @@ router.put('/:id', (req, res) => {
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA ATUALIZAR A CATEGORIA NO BANCO DE DADOS
-        const category = { id, ...updatedCategory }; // Dados estáticos de exemplo
+        let localDate = new Date()
+
+        const category = await prisma.category.update({
+            where: { id: id },
+            data: {
+                description: updatedCategory.description,
+                created_at: new Date(updatedCategory.created_at),
+                updated_at: localDate
+            }
+        });
+
+        await prisma.$disconnect();
 
         if (category) {
             /* #swagger.responses[200] = {
@@ -96,12 +120,14 @@ router.put('/:id', (req, res) => {
             return res.status(status.NOT_FOUND).send({ message: "Category not found" });
         }
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
     // #swagger.tags = ['Category']
     // #swagger.description = 'Endpoint that deletes a category by ID'
 
@@ -123,10 +149,13 @@ router.delete('/:id', (req, res) => {
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA DELETAR A CATEGORIA NO BANCO DE DADOS
-        const category = { id, name: "Sample Category" }; // Dados estáticos de exemplo
+        const deletedCategory = await prisma.category.delete({
+            where: { id: id }
+        });
 
-        if (category) {
+        await prisma.$disconnect();
+
+        if (deletedCategory) {
             /* #swagger.responses[200] = {
                 description: 'Category deleted successfully',
                 schema: { $ref: "#/definitions/Category" }
@@ -140,6 +169,8 @@ router.delete('/:id', (req, res) => {
             return res.status(status.NOT_FOUND).send({ message: "Category not found" });
         }
     } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
         /* #swagger.responses[500] = { description: 'Internal Server Error' } */
         return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
     }
