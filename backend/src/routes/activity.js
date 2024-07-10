@@ -53,6 +53,55 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.get('/byuser/:id', async (req, res) => {
+    // #swagger.tags = ['Activity']
+    // #swagger.description = 'Endpoint that returns an activity by ID'
+
+    /* #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'ID of the activity',
+        required: true,
+        type: 'integer'
+    } */
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+        /* #swagger.responses[400] = {
+            description: 'Invalid ID',
+            schema: { message: "Invalid activity ID" }
+        } */
+        return res.status(status.BAD_REQUEST).send({ message: "Invalid activity ID" });
+    }
+
+    try {
+        const activities = await prisma.activity.findMany({
+            where: { user_id: id }, // Filter by user ID
+        });
+
+        await prisma.$disconnect();
+
+        if (activities) {
+            /* #swagger.responses[200] = { 
+                schema: { $ref: "#/definitions/Activity" },
+                description: 'Activity found' 
+            } */
+
+            return res.status(status.OK).send(activities);
+        } else {
+            /* #swagger.responses[404] = {
+                schema: { message: 'Activity not found.' },
+                description: 'Activity not found.'
+            } */
+            return res.status(status.NOT_FOUND).send({ message: 'Activity not found.' });
+        }
+    } catch (error) {
+        console.error(error);
+        await prisma.$disconnect();
+        /* #swagger.responses[500] = { description: 'Internal Server Error' } */
+        return res.status(status.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error' });
+    }
+});
+
 router.post('/', async (req, res) => {
     // #swagger.tags = ['Activity']
     // #swagger.description = 'Endpoint that creates a new activity'
