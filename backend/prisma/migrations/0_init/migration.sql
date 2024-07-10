@@ -25,8 +25,9 @@ CREATE TABLE "user_profile" (
     "id" SERIAL NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-
+    
     CONSTRAINT "user_profile_pkey" PRIMARY KEY ("id")
 );
 
@@ -45,12 +46,13 @@ INSERT INTO "category" ("description", "created_at", "updated_at") VALUES
 ('Other', '2023-07-01', '2023-07-01');
 
 -- Insert data into the user_profile table
-INSERT INTO "user_profile" ("first_name", "last_name", "password") VALUES
-('John', 'Doe', 'password123'),
-('Jane', 'Smith', 'password456'),
-('Alice', 'Johnson', 'password789'),
-('Bob', 'Williams', 'password101'),
-('Charlie', 'Brown', 'password202');
+INSERT INTO "user_profile" ("first_name", "last_name", "email", "password") VALUES
+('John', 'Doe', 'john.doe@example.com', 'password123'),
+('Jane', 'Smith', 'jane.smith@example.com', 'securepassword'),
+('Alice', 'Johnson', 'alice.johnson@example.com', 'mypassword'),
+('Bob', 'Brown', 'bob.brown@example.com', 'password456'),
+('Carol', 'Davis', 'carol.davis@example.com', 'password789');
+
 
 -- Insert data into the activity table
 INSERT INTO "activity" ("description", "dt_initial", "dt_final", "category_id", "user_id") VALUES

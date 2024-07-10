@@ -25,7 +25,6 @@ router.get('/:id', async (req, res) => {
     }
 
     try {
-        // CONSTRUIR LOGICA PARA OBTER A INFORMACAO DO BANCO DE DADOS
         const activity = await prisma.activity.findUnique({
             where: { id: id }
         });
@@ -65,24 +64,21 @@ router.post('/', async (req, res) => {
        schema: { $ref: "#/definitions/AddActivity" }
     } */
 
-    const activity = req.body;
+    const { description, dt_initial, dt_final, category_id, user_id } = req.body
 
-    // Verifica se req.body contém os dados esperados
-    if (!activity || !activity.description || !activity.dt_initial || !activity.dt_final || !activity.category_id || !activity.user_id) {
+    // Verify req.body 
+    if (!description || !dt_initial || !dt_final || !category_id || !user_id) {
         return res.status(status.BAD_REQUEST).send({ message: 'Missing or incomplete activity data in request body.' });
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA ADICIONAR O DADO NO BANCO 
-        // const newActivity = { id: 1, ...activity };
-
         const newActivity = await prisma.activity.create({
             data: {
-                description: activity.description,
-                dt_initial: new Date(activity.dt_initial),
-                dt_final: new Date(activity.dt_final),
-                category_id: activity.category_id,
-                user_id: activity.user_id
+                description: description,
+                dt_initial: new Date(dt_initial),
+                dt_final: new Date(dt_final),
+                category_id: category_id,
+                user_id: user_id
             }
         });
 
@@ -120,7 +116,8 @@ router.put('/:id', async (req, res) => {
     } */
 
     const id = parseInt(req.params.id, 10);
-    const updatedActivity = req.body;
+
+    const { description, dt_initial, dt_final, category_id, user_id } = req.body
 
     if (isNaN(id)) {
         /* #swagger.responses[400] = {
@@ -131,21 +128,26 @@ router.put('/:id', async (req, res) => {
     }
 
     try {
-        // CONSTRUIR A LOGICA PARA ATUALIZAR A INFORMACAO NO BANCO
-        let updatedData = {};
+        // let updatedData = { description, dt_initial, dt_final, category_id, user_id };
 
-        if (updatedActivity.dt_final) {
-            const dtFinalDate = new Date(updatedActivity.dt_final);
-            if (!isNaN(dtFinalDate)) {
-                updatedData.dt_final = dtFinalDate.toISOString();
-            } else {
-                return res.status(status.BAD_REQUEST).send({ message: "Invalid date format for dt_final" });
-            }
-        }
+        // if (updatedActivity.dt_final) {
+        //     const dtFinalDate = new Date(dt_final);
+        //     if (!isNaN(dtFinalDate)) {
+        //         updatedData.dt_final = dtFinalDate.toISOString();
+        //     } else {
+        //         return res.status(status.BAD_REQUEST).send({ message: "Invalid date format for dt_final" });
+        //     }
+        // }
 
         const activity = await prisma.activity.update({
             where: { id: id },
-            data: updatedData
+            data: {
+                description: description,
+                dt_initial: new Date(dt_initial),
+                dt_final: new Date(dt_final),
+                category_id: category_id,
+                user_id: user_id
+            }
         });
 
         await prisma.$disconnect();

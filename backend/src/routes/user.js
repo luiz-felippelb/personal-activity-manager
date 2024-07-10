@@ -37,14 +37,14 @@ router.post('/', async (req, res) => {
        schema: { $ref: "#/definitions/AddUser" }
     } */
 
-    const user = req.body;
+    const { first_name, last_name, password } = req.body;
 
     try {
         const newUser = await prisma.user_profile.create({
             data: {
-                first_name: user.first_name,
-                last_name: user.last_name,
-                password: user.password
+                first_name: first_name,
+                last_name: last_name,
+                password: password
             }
         });
 
@@ -82,7 +82,7 @@ router.put('/:id', async (req, res) => {
     } */
 
     const id = parseInt(req.params.id, 10);
-    const updatedUser = req.body;
+    const { first_name, last_name, password } = req.body;
 
     if (isNaN(id)) {
         /* #swagger.responses[400] = {
@@ -96,9 +96,9 @@ router.put('/:id', async (req, res) => {
         const user = await prisma.user_profile.update({
             where: { id: id },
             data: {
-                first_name: updatedUser.first_name,
-                last_name: updatedUser.last_name,
-                password: updatedUser.password
+                first_name: first_name,
+                last_name: last_name,
+                password: password
             }
         });
 

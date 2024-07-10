@@ -37,14 +37,14 @@ router.post('/', async (req, res) => {
        schema: { $ref: "#/definitions/AddCategory" }
     } */
 
-    const category = req.body;
+    const { description } = req.body;
 
     try {
         const newCategory = await prisma.category.create({
             data: {
-                description: category.description,
-                created_at: new Date(category.created_at),
-                updated_at: new Date(category.updated_at)
+                description: description,
+                created_at: new Date().toLocaleString(undefined, {year: 'numeric', month: '2-digit', day: '2-digit', weekday:"long", hour: '2-digit', hour12: false, minute:'2-digit', second:'2-digit'}),
+                updated_at: new Date().toLocaleString(undefined, {year: 'numeric', month: '2-digit', day: '2-digit', weekday:"long", hour: '2-digit', hour12: false, minute:'2-digit', second:'2-digit'})
             }
         });
 
@@ -82,7 +82,7 @@ router.put('/:id', async (req, res) => {
     } */
 
     const id = parseInt(req.params.id, 10);
-    const updatedCategory = req.body;
+    const { description } = req.body;
 
     if (isNaN(id)) {
         /* #swagger.responses[400] = {
@@ -93,14 +93,12 @@ router.put('/:id', async (req, res) => {
     }
 
     try {
-        let localDate = new Date()
 
         const category = await prisma.category.update({
             where: { id: id },
             data: {
-                description: updatedCategory.description,
-                created_at: new Date(updatedCategory.created_at),
-                updated_at: localDate
+                description: description,
+                updated_at: new Date().toLocaleString(undefined, {year: 'numeric', month: '2-digit', day: '2-digit', weekday:"long", hour: '2-digit', hour12: false, minute:'2-digit', second:'2-digit'}),
             }
         });
 

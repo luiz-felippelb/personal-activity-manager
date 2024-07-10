@@ -111,6 +111,7 @@ module.exports = {
       status: "true"
     }
   },
+  // apis: ['./src/routes/*.js'],
   // paths: {
   //   "/users": {
 
